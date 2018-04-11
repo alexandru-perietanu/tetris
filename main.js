@@ -15,9 +15,38 @@ function init() {
     contentDiv = document.getElementsByClassName("content")[0];
 
     createVirtualMatrix();
+    initializaMatrix();
+    initKeyListeners();
     currentPiece = generateRandomPiece();
-    gameTimer = setInterval(gameTimer, 16);
+    gameTimer = setInterval(gameTimer, 200);
     
+};
+
+function initKeyListeners() {
+    var body = document.getElementsByTagName("body")[0];
+    body.addEventListener("keyup", keyUpListener);
+};
+
+function keyUpListener(e) {
+    console.log(e.keyCode);
+    switch (e.keyCode) {
+        case 37: //left
+            currentColumn--;
+            if (currentColumn < 0) {
+                currentColumn = 0;
+            }
+            drawMatrix();
+        break;
+        case 39: //right
+            currentColumn++;
+            if (currentColumn > columns - currentPiece.matrix[0].length) {
+                currentColumn = columns - currentPiece.matrix[0].length
+            }
+            drawMatrix();
+        break;
+        
+
+    }
 };
 
 function generateRandomPiece() {
@@ -33,12 +62,12 @@ function gameTimer() {
 
     currentLine++;
     if (currentLine > virtualMatrix.length - currentPiece.matrix.length) {
-        debugger;
         currentLine = 0;
     }
 };
 
 function movePiece() {
+    // test if next line has a pierce on the width of the current piece
     for (var i = 0; i < currentPiece.matrix.length; i++) {
         for (var j = 0; j < currentPiece.matrix[i].length; j++) {
             virtualMatrix[currentLine + i][currentColumn + j] = currentPiece.matrix[i][j];
@@ -58,15 +87,13 @@ function drawMatrix() {
     var block;
     for (var i = 0; i < virtualMatrix.length; i++) {
         for (var j = 0; j < virtualMatrix[i].length; j++) {
+            block = document.getElementById("block" + i + j);
             if (virtualMatrix[i][j]) {
-                block = document.createElement("div");
-                block.className = "block";
-                block.style.top = (i * blockSize) + "px";
-                block.style.left = (j * blockSize) + "px";
-
-                contentDiv.appendChild(block);
+                block.style.display = "inline-block";
             }
-
+            else {
+                block.style.display = "none";
+            }
         }
     }
 };
@@ -120,6 +147,22 @@ function createVirtualMatrix() {
         virtualMatrix[i] = [];
         for (var j = 0; j < columns; j++) {
             virtualMatrix[i][j] = 0;
+        }
+    }
+};
+
+function initializaMatrix() {
+    for (var i = 0; i < lines; i++) {
+        virtualMatrix[i] = [];
+        for (var j = 0; j < columns; j++) {
+            block = document.createElement("div");
+            block.className = "block";
+            block.style.top = (i * blockSize) + "px";
+            block.style.left = (j * blockSize) + "px";
+            block.style.display = "none";
+            block.id = "block" + i + j;
+
+            contentDiv.appendChild(block);
         }
     }
 };
