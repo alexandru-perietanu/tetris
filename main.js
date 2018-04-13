@@ -6,7 +6,8 @@ var currentPiece = {};
 var gameTimer;
 var currentLine = 0;
 var currentColumn = 0;
-var blockPool = [];
+var prevLine = currentLine;
+var prevColumn = currentColumn;
 var contentDiv;
 var blockSize = 20;
 
@@ -28,20 +29,27 @@ function initKeyListeners() {
 };
 
 function keyUpListener(e) {
-    console.log(e.keyCode);
     switch (e.keyCode) {
         case 37: //left
+            prevColumn = currentColumn;
             currentColumn--;
             if (currentColumn < 0) {
                 currentColumn = 0;
             }
+            clearPrevPiecePosition(prevLine);
+            clearPrevPiecePosition(currentLine);
+            drawPieceAtCurrentPosition();
             drawMatrix();
         break;
         case 39: //right
+            prevColumn = currentColumn;
             currentColumn++;
             if (currentColumn > columns - currentPiece.matrix[0].length) {
                 currentColumn = columns - currentPiece.matrix[0].length
             }
+            clearPrevPiecePosition(prevLine);
+            clearPrevPiecePosition(currentLine);
+            drawPieceAtCurrentPosition();
             drawMatrix();
         break;
         
@@ -51,23 +59,53 @@ function keyUpListener(e) {
 
 function generateRandomPiece() {
     var piece = pieces[Math.round(Math.random() * 7)];
-    console.log(piece);
+    debugger;
     return generatePiece(piece);
 };
 
 function gameTimer() {
-    clearMatrix();
-    movePiece();
+    //clearMatrix();
+    clearPrevPiecePosition(prevLine);
+    drawPieceAtCurrentPosition();
     drawMatrix();
-
+    prevLine = currentLine;
     currentLine++;
     if (currentLine > virtualMatrix.length - currentPiece.matrix.length) {
+        currentPiece = generateRandomPiece();
+        debugger;
         currentLine = 0;
     }
 };
 
-function movePiece() {
-    // test if next line has a pierce on the width of the current piece
+function printMatrix() {
+    var s = "";
+    
+    for (var i = 0; i < lines; i++) {
+        s += virtualMatrix[i].join(",");
+        s += "\n";
+    }
+    console.log(s);
+    
+}
+
+function clearPrevPiecePosition(line) {
+    for (var i = 0; i < currentPiece.matrix.length; i++) {
+        for (var j = 0; j < currentPiece.matrix[i].length; j++) {
+            //if (currentPiece.matrix[i][j]) {
+                if (line + i < lines) {
+                    virtualMatrix[line + i][prevColumn + j] = 0;
+                    virtualMatrix[line + i][currentColumn + j] = 0;
+                }
+            //}
+        }
+    }
+}
+
+function drawPieceAtCurrentPosition() {
+    // test if next line has a piece on the width of the current piece
+
+    var nextLine = i + currentPiece.matrix.length + 1;
+
     for (var i = 0; i < currentPiece.matrix.length; i++) {
         for (var j = 0; j < currentPiece.matrix[i].length; j++) {
             virtualMatrix[currentLine + i][currentColumn + j] = currentPiece.matrix[i][j];
@@ -96,6 +134,8 @@ function drawMatrix() {
             }
         }
     }
+    printMatrix();
+    
 };
 
 function generatePiece(name) {
@@ -129,7 +169,7 @@ function generatePiece(name) {
         break;
         case "T":
             currentPiece.matrix = [];
-            currentPiece.matrix[0] = [0, 1, 1];
+            currentPiece.matrix[0] = [1, 1, 1];
             currentPiece.matrix[1] = [0, 1, 0];
         break;
         case "Z":
@@ -149,11 +189,11 @@ function createVirtualMatrix() {
             virtualMatrix[i][j] = 0;
         }
     }
+    printMatrix();
 };
 
 function initializaMatrix() {
     for (var i = 0; i < lines; i++) {
-        virtualMatrix[i] = [];
         for (var j = 0; j < columns; j++) {
             block = document.createElement("div");
             block.className = "block";
